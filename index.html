@@ -144,10 +144,10 @@
     return;
   }
 
-  // 桌機：顯示按鈕 + 帶字 QR
-  $status.textContent = '請用手機 LINE 掃描或點擊按鈕。';
-  showOpenButton();
-  showQR();
+// 桌機：僅顯示 QR，不顯示按鈕
+$status.textContent = '請使用手機 LINE 掃描下方 QR 開啟優惠。';
+showQR();
+return;
 })();
 </script>
 </body>
