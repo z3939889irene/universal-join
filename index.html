@@ -99,13 +99,17 @@
     $qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${qrTarget}`;
   }
 
-  // 沒帶 k → 友善提示 + 仍提供按鈕
-  if (!keyword) {
-    $status.innerHTML = '未偵測到關鍵字，仍可點擊下方按鈕於 LINE 開啟。';
-    showOpenButton();
-    if (isDesktop()) showQR();
+// 沒帶 k → 桌機只顯示 QR；手機顯示按鈕
+if (!keyword) {
+  if (isDesktop()) {
+    $status.textContent = '請使用手機 LINE 掃描下方 QR 開啟優惠。';
+    showQR();
     return;
   }
+  $status.textContent = '未偵測到關鍵字，請點擊下方按鈕於 LINE 開啟。';
+  showOpenButton();
+  return;
+}
 
   // LINE App 內：用 LIFF 自動送字
   if (isLineInApp()) {
