@@ -12,6 +12,7 @@
 - `?k=TikTok粉絲專屬福利`（TikTok）
 - `?k=新好友領取折扣金`（官網廣告）
 - `?k=新加入好友領取折扣金`（FB&IG 廣告）
+- `?k=新加入好友享更多福利`（官網彈跳視窗）
 
 ## 佈署
 1) 建 GitHub Repo（建議：`universal-join`）並上傳 `index.html`。
