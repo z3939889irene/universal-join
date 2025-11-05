@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>加入官方帳號・立即解鎖優惠</title>
+  <meta name="description" content="依裝置自動切換：LINE 內自動送字、手機瀏覽器帶入文字、電腦顯示帶關鍵字的 QR。支援 ?k= 關鍵字參數。" />
+  <link rel="icon" href="data:," />
+  <style>
+    html,body { margin:0; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial; }
+    .wrap { min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+    .card { width: 100%; max-width: 760px; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    p { line-height: 1.6; margin: 8px 0; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top: 12px; justify-content:center; }
+    .btn { display:inline-block; padding:12px 16px; border-radius:12px; text-decoration:none; color:#fff; background:#06c755; font-weight:600; }
+    .ghost { background:#374151; }
+    .center { text-align:center; }
+    img.qr { width:260px; height:260px; border: 8px solid #fff; box-shadow: 0 8px 24px rgba(0,0,0,.08); border-radius:12px; }
+    code { background:#f3f4f6; padding:2px 6px; border-radius:6px; }
+    .hint { color:#6b7280; font-size: 14px; }
+  </style>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>加入官方帳號・立即解鎖優惠</h1>
+      <p class="hint">本頁支援網址參數 <code>?k=關鍵字</code>（例：<code>?k=YT觀眾專屬好禮</code>）。</p>
+      <p id="status">偵測裝置中…</p>
+      <div class="row">
+        <a id="btn-primary" class="btn" href="#" style="display:none;">立即前往</a>
+        <a id="btn-secondary" class="btn ghost" href="#" style="display:none;">在 LINE 中開啟</a>
+      </div>
+      <div id="desktop" style="display:none; margin-top:16px; text-align:center;">
+        <p>請用手機 <strong>LINE</strong> 掃描下方 QR 以直接帶入關鍵字：</p>
+        <img class="qr" id="qr" alt="帶關鍵字的 LINE 連結 QR">
+        <p class="hint" style="margin-top:12px;">若無法掃描，請用手機開啟此頁面。</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    const CFG = {
+      LIFF_ID: "2008415501-DxLWdBGd",
+      OA_ID: "@camel-live",
+      ADD_FRIEND: "https://lin.ee/eG9Z28u",
+      DEFAULT_KEYWORD: "line會員限定立刻解鎖優惠"
+    };
+
+    function getKeyword() {
+      const p = new URLSearchParams(location.search);
+      const k = p.get('k');
+      return (k && k.trim()) ? k.trim() : CFG.DEFAULT_KEYWORD;
+    }
+
+    function buildOaMessageURL(keyword) {
+      const oaIdNoAt = CFG.OA_ID.replace(/^@/,''); // camel-live
+      const encoded = encodeURIComponent(keyword);
+      return `https://line.me/R/oaMessage/%40${oaIdNoAt}/?${encoded}`;
+    }
+
+    (function() {
+      const KEYWORD = getKeyword();
+      const isLine = /Line\//i.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isMobile = isAndroid || isIOS;
+
+      const btn1 = document.getElementById('btn-primary');
+      const btn2 = document.getElementById('btn-secondary');
+      const status = document.getElementById('status');
+
+      const oaURL = buildOaMessageURL(KEYWORD);
+
+      function go(url) { location.href = url; }
+
+      if (isLine) {
+        status.innerText = '在 LINE 內開啟，準備自動發送…';
+        liff.init({ liffId: CFG.LIFF_ID }).then(() => {
+          if (!liff.isLoggedIn()) return liff.login();
+          return liff.sendMessages([{ type:'text', text: KEYWORD }]).then(() => {
+            status.innerText = '已發送「' + KEYWORD + '」，請回到聊天室查看！';
+            setTimeout(() => liff.closeWindow(), 800);
+          }).catch(() => {
+            status.innerText = '自動發送失敗，請按下方按鈕手動發送。';
+            btn1.style.display = 'inline-block';
+            btn1.textContent = '手動發送關鍵字';
+            btn1.href = oaURL;
+          });
+        }).catch(() => {
+          status.innerText = '初始化失敗，請按下方按鈕手動發送。';
+          btn1.style.display = 'inline-block';
+          btn1.textContent = '手動發送關鍵字';
+          btn1.href = oaURL;
+        });
+        return;
+      }
+
+      if (isMobile) {
+        status.innerText = '即將切回 LINE 並帶入關鍵字…';
+        try { go(oaURL); } catch(e) {}
+        btn1.style.display = 'inline-block';
+        btn1.textContent = '若未跳轉，點此帶入關鍵字';
+        btn1.href = oaURL;
+        btn2.style.display = 'inline-block';
+        btn2.textContent = '改為加入好友';
+        btn2.href = CFG.ADD_FRIEND;
+        return;
+      }
+
+      status.innerText = '偵測到桌機環境，請用手機 LINE 掃描 QR';
+      // 產 QR：改為帶關鍵字的 oaMessage 連結
+      const qrData = oaURL;
+      const qrApi = 'https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=' + encodeURIComponent(qrData);
+      document.getElementById('qr').src = qrApi;
+      document.getElementById('desktop').style.display = 'block';
+    })();
+  </script>
+</body>
+</html>
